@@ -6,7 +6,7 @@ import { fetchData } from './fetch-data';
 
 const startOfWeek = new Date();
 startOfWeek.setHours(0, 0, 0, 0);
-startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1);
 
 const endOfWeek = new Date();
 endOfWeek.setHours(23, 59, 59, 999);
@@ -39,7 +39,7 @@ const WeeklyChart = () => {
 
     const normalizedDate = new Date(curr.timestamp);
     normalizedDate.setFullYear(startOfWeek.getFullYear(), startOfWeek.getMonth());
-    normalizedDate.setDate(startOfWeek.getDate() + date.getDay());
+    normalizedDate.setDate(startOfWeek.getDate() + date.getDay() - 1);
 
     acc.find((d) => d.week === week)!.data.push({
       timestamp: normalizedDate.getTime(),
