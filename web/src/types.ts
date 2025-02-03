@@ -1,4 +1,4 @@
 export type Count = {
   timestamp: number;
-  count: number;
+  count: number | null;
 }
