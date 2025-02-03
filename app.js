@@ -25,7 +25,7 @@ async function start() {
   const app = express();
   app.use(express.json())
 
-  app.get('/counts', async (_, res) => {
+  app.get('/counts.txt', async (_, res) => {
     res.send(await fs.readFile('./storage/counts.txt', 'utf-8'));
   });
 
