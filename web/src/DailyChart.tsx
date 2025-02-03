@@ -1,5 +1,8 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Switch } from './components/ui/switch';
+import { Label } from './components/ui/label';
+import { useState } from 'react';
 
 const generateData = (days = 30) => {
   const data = [];
@@ -23,16 +26,18 @@ const generateData = (days = 30) => {
   return data;
 };
 
+const rawData = generateData();
+
 const startOfDay = new Date();
 startOfDay.setHours(0, 0, 0, 0);
 
 const DailyChart = () => {
-  const rawData = generateData();
+  const [sameWeekday, setSameWeekday] = useState(false);
 
   const processedData = rawData.reduce<{ day: string; data: { timestamp: number; value: number }[] }[]>((acc, curr) => {
     const date = new Date(curr.timestamp);
 
-    if (date.getHours() < 7 || date.getHours() > 22) {
+    if (sameWeekday && date.getDay() !== new Date().getDay()) {
       return acc;
     }
 
@@ -62,40 +67,45 @@ const DailyChart = () => {
     <Card className="w-full">
       <CardHeader>
         <CardTitle>Daily Patterns Comparison</CardTitle>
-        <CardDescription>Values tracked over time, normalized to show daily patterns</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-[400px] w-full">
-          <LineChart
-            width={800}
-            height={400}
-            margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="timestamp"
-              type="number"
-              domain={['dataMin', 'dataMax']}
-              tickFormatter={(timestamp) => {
-                const date = new Date(timestamp);
-                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-              }}
-            />
-            <YAxis />
-            {processedData.map((data, index) => (
-              <Line
-                key={data.day}
-                data={data.data}
-                type="monotone"
-                dataKey="value"
-                name={data.day}
-                stroke={index === processedData.length - 1 ? '#ee4455' : '#2563eb'}
-                strokeOpacity={(index / processedData.length) * 0.9 + 0.1}
-                strokeWidth={(index / processedData.length) * 1.5 + 0.5}
-                dot={false}
+        <div className="h-[50vh] w-full">
+          <div className="flex items-center space-x-2 pb-4">
+            <Switch id="same-weekday" checked={sameWeekday} onCheckedChange={(checked) => setSameWeekday(checked)} />
+            <Label htmlFor="same-weekday">Same weekday</Label>
+          </div>
+
+          <ResponsiveContainer>
+            <LineChart className='pb-4'>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="timestamp"
+                type="number"
+                domain={['dataMin', 'dataMax']}
+                tickCount={25}
+                tickFormatter={(timestamp) => {
+                  const date = new Date(timestamp);
+                  return date.toLocaleTimeString([], { hour: 'numeric' });
+                }}
               />
-            ))}
-          </LineChart>
+              <YAxis />
+
+              {processedData.map((data, index) => (
+                <Line
+                  key={data.day}
+                  data={data.data}
+                  type="monotone"
+                  dataKey="value"
+                  name={data.day}
+                  stroke={index === processedData.length - 1 ? '#2563eb' : '#ee9922'}
+                  strokeOpacity={(index / processedData.length) * 0.9 + 0.1}
+                  strokeWidth={index === processedData.length - 1 ? 3 : (index / processedData.length) * 2 + 0.5}
+                  animationDuration={250}
+                  dot={false}
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </CardContent>
     </Card>

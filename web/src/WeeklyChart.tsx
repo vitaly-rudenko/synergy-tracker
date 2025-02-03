@@ -1,4 +1,4 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { getWeek } from './utils/get-week';
 
@@ -27,9 +27,9 @@ const generateData = (days = 30) => {
 const startOfDay = new Date();
 startOfDay.setHours(0, 0, 0, 0);
 
-const WeeklyChart = () => {
-  const rawData = generateData();
+const rawData = generateData();
 
+const WeeklyChart = () => {
   const processedData = rawData.reduce<{ week: string; data: { timestamp: number; value: number; originalTimestamp: number }[] }[]>((acc, curr) => {
     const date = new Date(curr.timestamp);
     const week = String(getWeek(date));
@@ -57,38 +57,37 @@ const WeeklyChart = () => {
     <Card className="w-full">
       <CardHeader>
         <CardTitle>Weakly Patterns Comparison</CardTitle>
-        <CardDescription>Values tracked over time, normalized to show weekly patterns</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-[400px] w-full">
-          <LineChart
-            width={800}
-            height={400}
-            margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="timestamp"
-              type="number"
-              domain={['dataMin', 'dataMax']}
-              tickCount={8}
-              tickFormatter={(timestamp) => new Date(timestamp + 24 * 60 * 60_000).toLocaleDateString([], { weekday: 'short' })}
-            />
-            <YAxis />
-            {processedData.map((data, index) => (
-              <Line
-                key={data.week}
-                data={data.data}
-                type="monotone"
-                dataKey="value"
-                name={data.week}
-                stroke={index === processedData.length - 1 ? '#ee4455' : '#2563eb'}
-                strokeOpacity={(index / processedData.length) * 0.5 + 0.1}
-                strokeWidth={(index / processedData.length) * 1.5 + 0.5}
-                dot={false}
+        <div className="h-[50vh] w-full">
+          <ResponsiveContainer>
+            <LineChart width={800} height={400}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="timestamp"
+                type="number"
+                domain={['dataMin', 'dataMax']}
+                tickCount={8}
+                tickFormatter={(timestamp) => new Date(timestamp + 24 * 60 * 60_000).toLocaleDateString([], { weekday: 'short' })}
               />
-            ))}
-          </LineChart>
+              <YAxis />
+
+              {processedData.map((data, index) => (
+                <Line
+                  key={data.week}
+                  data={data.data}
+                  type="monotone"
+                  dataKey="value"
+                  name={data.week}
+                  stroke={index === processedData.length - 1 ? '#2563eb' : '#ee9922'}
+                  strokeOpacity={(index / processedData.length) * 0.9 + 0.1}
+                  strokeWidth={index === processedData.length - 1 ? 3 : (index / processedData.length) * 2 + 0.5}
+                  animationDuration={250}
+                  dot={false}
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </CardContent>
     </Card>
