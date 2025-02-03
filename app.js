@@ -24,8 +24,9 @@ async function start() {
 
   const app = express();
 
-  app.get('/counts.txt', async (_, res) => {
-    res.send(await fs.readFile('./storage/counts.txt', 'utf-8'));
+  app.get('/counts.txt', (_, res) => {
+    const stream = fs.createReadStream('./storage/counts.txt', 'utf-8');
+    stream.pipe(res);
   });
 
   const port = Number(process.env.PORT || 3000)
