@@ -3,7 +3,7 @@ import express from 'express'
 
 const endpoint = 'https://fitness-kit.synergy.fitness/clubs/get_clients_in_club_count/?club_id=1'
 
-const INTERVAL_MS = 5 * 60_000; // every 5 minutes
+const INTERVAL_MS = 10 * 60_000; // every 10 minutes
 const TRUNCATE_SIZE = 100_000; // keep last 100k counts
 const TRUNCATE_EVERY_ITERATION = 1_000; // truncate counts every 1000 iterations
 
@@ -23,6 +23,7 @@ async function start() {
   }, INTERVAL_MS)
 
   const app = express();
+  app.use(express.json())
 
   app.get('/counts', async (_, res) => {
     const counts = await fs.readFile('./storage/counts.txt', 'utf-8');
