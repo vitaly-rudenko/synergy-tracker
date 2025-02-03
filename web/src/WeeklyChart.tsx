@@ -52,11 +52,11 @@ const WeeklyChart = () => {
 
   return (
     <Card className="w-full max-w-[1000px]">
-    <CardHeader>
+      <CardHeader className='pb-4'>
         <CardTitle>Weekly visitors</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="h-[75vw] max-h-[50vh] w-full">
+      <CardContent className='pb-1'>
+        <div className="h-[75vw] max-h-[40vh] w-full">
           <ResponsiveContainer>
             <LineChart margin={{ top: 0, left: 0, bottom: 0, right: 0 }} className='pb-2'>
               <CartesianGrid strokeDasharray="3 3" />

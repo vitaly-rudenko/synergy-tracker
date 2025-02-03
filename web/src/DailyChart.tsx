@@ -1,5 +1,5 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from './components/ui/switch';
 import { Label } from './components/ui/label';
 import { useEffect, useState } from 'react';
@@ -73,11 +73,12 @@ const DailyChart = () => {
 
   return (
     <Card className="w-full max-w-[1000px]">
-      <CardHeader>
+      <CardHeader className='pb-4'>
         <CardTitle>Daily visitors</CardTitle>
+        <CardDescription>Latest count: {data.sort((a, b) => b.timestamp - a.timestamp)[0]?.value ?? 0}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-[75vw] max-h-[50vh] w-full pb-4">
+        <div className="h-[75vw] max-h-[40vh] w-full pb-4">
           <ResponsiveContainer>
             <LineChart margin={{ top: 0, left: 0, bottom: 0, right: 0 }} className='pb-2'>
               <CartesianGrid strokeDasharray="3 3" />
