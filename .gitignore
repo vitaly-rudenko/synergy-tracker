@@ -114,3 +114,4 @@ logs/
 .cert/
 files/
 storage/
+docker-compose.override.yml

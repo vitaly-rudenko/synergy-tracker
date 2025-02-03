@@ -9,8 +9,6 @@ services:
       PORT: "3000"
     volumes:
       - "./storage:/app/storage"
-    ports:
-      - "3000:3000"
     networks:
       - "global_network"
 
