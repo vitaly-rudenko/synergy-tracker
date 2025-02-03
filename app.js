@@ -13,15 +13,7 @@ let iteration = 0;
 async function start() {
   await fs.mkdir('./storage', { recursive: true });
 
-  setInterval(async () => {
-    iteration++;
-    if (iteration > TRUNCATE_EVERY_ITERATION) {
-      iteration = 0;
-      await truncateCounts();
-    }
-
-    await fs.appendFile('./storage/counts.txt', `${new Date().toISOString()} ${await fetchCount()}\n`);
-  }, INTERVAL_MS)
+  setInterval(() => writeCounts(), INTERVAL_MS)
 
   const app = express();
 
@@ -34,6 +26,16 @@ async function start() {
   app.listen(port, () => {
     console.log(`Server started on port ${port}`);
   });
+}
+
+async function writeCounts() {
+  iteration++;
+  if (iteration > TRUNCATE_EVERY_ITERATION) {
+    iteration = 0;
+    await truncateCounts();
+  }
+
+  await fs.appendFile('./storage/counts.txt', `${new Date().toISOString()} ${await fetchCount()}\n`);
 }
 
 async function fetchCount() {
