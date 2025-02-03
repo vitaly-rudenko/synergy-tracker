@@ -5,28 +5,31 @@ import { Label } from './components/ui/label';
 import { useEffect, useState } from 'react';
 import { fetchData } from './fetch-data';
 
+const startOfDay = new Date();
+startOfDay.setHours(0, 0, 0, 0);
+
 const endOfDay = new Date();
 endOfDay.setHours(23, 59, 59, 999);
 
 const DailyChart = () => {
   const [sameWeekday, setSameWeekday] = useState(false);
+  const [data, setData] = useState<{ timestamp: number; value: number | null }[]>([]);
 
-  const [data, setData] = useState<{ timestamp: number; value: number }[]>([]);
   useEffect(() => {
     fetchData().then((data) => setData([
+      {
+        timestamp: startOfDay.getTime(),
+        value: null,
+      },
       ...data,
       {
-        timestamp: Date.now(),
-        value: 0,
-      },
-      {
         timestamp: endOfDay.getTime(),
-        value: 0,
+        value: null,
       }
-    ]));
+    ].sort((a, b) => a.timestamp - b.timestamp)));
   }, [])
 
-  const processedData = data.reduce<{ day: string; data: { timestamp: number; value: number }[] }[]>((acc, curr) => {
+  const processedData = data.reduce<{ day: string; data: { timestamp: number; value: number | null }[] }[]>((acc, curr) => {
     const date = new Date(curr.timestamp);
 
     if (sameWeekday && date.getDay() !== new Date().getDay()) {
@@ -40,7 +43,7 @@ const DailyChart = () => {
     }
 
     const normalizedDate = new Date(curr.timestamp);
-    normalizedDate.setFullYear(2022, 0, 1)
+    normalizedDate.setFullYear(startOfDay.getFullYear(), startOfDay.getMonth(), startOfDay.getDate());
 
     acc.find((d) => d.day === day)!.data.push({
       timestamp: normalizedDate.getTime(),
@@ -74,13 +77,13 @@ const DailyChart = () => {
                 dataKey="timestamp"
                 type="number"
                 domain={['dataMin', 'dataMax']}
-                tickCount={25}
+                ticks={new Array(24).fill(0).map((_, index) => startOfDay.getTime() + index * 60 * 60 * 1000)}
                 tickFormatter={(timestamp) => {
                   const date = new Date(timestamp);
                   return date.toLocaleTimeString([], { hour: 'numeric' });
                 }}
               />
-              <YAxis />
+              <YAxis tickCount={25} domain={[0, (dataMax: number) => Math.max(500, dataMax)]} allowDataOverflow />
 
               {processedData.map((data, index) => (
                 <Line
@@ -88,6 +91,7 @@ const DailyChart = () => {
                   data={data.data}
                   type="monotone"
                   dataKey="value"
+                  connectNulls={false}
                   name={data.day}
                   stroke={index === processedData.length - 1 ? '#2563eb' : '#ee9922'}
                   strokeOpacity={((index + 1) / processedData.length) * 0.9 + 0.1}

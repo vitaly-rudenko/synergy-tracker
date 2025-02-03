@@ -4,27 +4,32 @@ import { getWeek } from './utils/get-week';
 import { useState, useEffect } from 'react';
 import { fetchData } from './fetch-data';
 
+const startOfWeek = new Date();
+startOfWeek.setHours(0, 0, 0, 0);
+startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+
 const endOfWeek = new Date();
 endOfWeek.setHours(23, 59, 59, 999);
-endOfWeek.setDate(endOfWeek.getDate() + 7 - endOfWeek.getDay());
+endOfWeek.setDate(startOfWeek.getDate() + 6);
 
 const WeeklyChart = () => {
-  const [data, setData] = useState<{ timestamp: number; value: number }[]>([]);
+  const [data, setData] = useState<{ timestamp: number; value: number | null }[]>([]);
+
   useEffect(() => {
     fetchData().then((data) => setData([
+      {
+        timestamp: startOfWeek.getTime(),
+        value: null,
+      },
       ...data,
       {
-        timestamp: Date.now(),
-        value: 0,
-      },
-      {
         timestamp: endOfWeek.getTime(),
-        value: 0,
+        value: null,
       }
-    ]));
+    ].sort((a, b) => a.timestamp - b.timestamp)));
   }, [])
 
-  const processedData = data.reduce<{ week: string; data: { timestamp: number; value: number; originalTimestamp: number }[] }[]>((acc, curr) => {
+  const processedData = data.reduce<{ week: string; data: { timestamp: number; value: number | null; originalTimestamp: number }[] }[]>((acc, curr) => {
     const date = new Date(curr.timestamp);
     const week = String(getWeek(date));
 
@@ -33,10 +38,8 @@ const WeeklyChart = () => {
     }
 
     const normalizedDate = new Date(curr.timestamp);
-    normalizedDate.setFullYear(2022, 0, 1);
-    const dayOfWeek = date.getDay();
-    const mondayBasedDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-    normalizedDate.setDate(normalizedDate.getDate() - normalizedDate.getDay() + mondayBasedDay);
+    normalizedDate.setFullYear(startOfWeek.getFullYear(), startOfWeek.getMonth());
+    normalizedDate.setDate(startOfWeek.getDate() + date.getDay());
 
     acc.find((d) => d.week === week)!.data.push({
       timestamp: normalizedDate.getTime(),
@@ -46,8 +49,6 @@ const WeeklyChart = () => {
 
     return acc;
   }, [])
-
-  console.log(processedData)
 
   return (
     <Card className="w-full">
@@ -63,16 +64,18 @@ const WeeklyChart = () => {
                 dataKey="timestamp"
                 type="number"
                 domain={['dataMin', 'dataMax']}
-                tickCount={8}
-                tickFormatter={(timestamp) => new Date(timestamp + 24 * 60 * 60_000).toLocaleDateString([], { weekday: 'short' })}
+                ticks={new Array(7).fill(0).map((_, index) => startOfWeek.getTime() + index * 24 * 60 * 60 * 1000)}
+                interval='equidistantPreserveStart'
+                tickFormatter={(timestamp) => new Date(timestamp).toLocaleDateString([], { weekday: 'short' })}
               />
-              <YAxis />
+              <YAxis domain={[50, 600]} allowDataOverflow />
 
               {processedData.map((data, index) => (
                 <Line
                   key={data.week}
                   data={data.data}
                   type="monotone"
+                  connectNulls={false}
                   dataKey="value"
                   name={data.week}
                   stroke={index === processedData.length - 1 ? '#2563eb' : '#ee9922'}
