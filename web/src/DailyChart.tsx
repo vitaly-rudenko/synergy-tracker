@@ -11,25 +11,32 @@ startOfDay.setHours(0, 0, 0, 0);
 const endOfDay = new Date();
 endOfDay.setHours(23, 59, 59, 999);
 
+const effectiveStartOfDay = new Date(startOfDay);
+effectiveStartOfDay.setHours(7);
+
+const effectiveEndOfDay = new Date(startOfDay);
+effectiveEndOfDay.setHours(22);
+
 const DailyChart = () => {
   const [sameWeekday, setSameWeekday] = useState(false);
+  const [hideIneffective, setHideIneffective] = useState(true);
   const [data, setData] = useState<{ timestamp: number; value: number | null }[]>([]);
 
   useEffect(() => {
-    fetchData().then((data) => setData([
-      {
-        timestamp: startOfDay.getTime(),
-        value: null,
-      },
-      ...data,
-      {
-        timestamp: endOfDay.getTime(),
-        value: null,
-      }
-    ].sort((a, b) => a.timestamp - b.timestamp)));
-  }, [])
+    fetchData().then((data) => setData(data));
+  }, []);
 
-  const processedData = data.reduce<{ day: string; data: { timestamp: number; value: number | null }[] }[]>((acc, curr) => {
+  const processedData = [
+    {
+      timestamp: hideIneffective ? effectiveStartOfDay.getTime() : startOfDay.getTime(),
+      value: null,
+    },
+    ...data,
+    {
+      timestamp: hideIneffective ? effectiveEndOfDay.getTime() : endOfDay.getTime(),
+      value: null,
+    }
+  ].sort((a, b) => a.timestamp - b.timestamp).reduce<{ day: string; data: { timestamp: number; value: number | null }[] }[]>((acc, curr) => {
     const date = new Date(curr.timestamp);
 
     if (sameWeekday && date.getDay() !== new Date().getDay()) {
@@ -45,6 +52,12 @@ const DailyChart = () => {
     const normalizedDate = new Date(curr.timestamp);
     normalizedDate.setFullYear(startOfDay.getFullYear(), startOfDay.getMonth(), startOfDay.getDate());
 
+    if (hideIneffective) {
+      if (normalizedDate < effectiveStartOfDay || normalizedDate > effectiveEndOfDay) {
+        return acc;
+      }
+    }
+
     acc.find((d) => d.day === day)!.data.push({
       timestamp: normalizedDate.getTime(),
       value: curr.value,
@@ -59,15 +72,22 @@ const DailyChart = () => {
   });
 
   return (
-    <Card className="w-full">
+    <Card className="w-full max-w-[1000px]">
       <CardHeader>
         <CardTitle>Daily Patterns Comparison</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[50vh] w-full">
-          <div className="flex items-center space-x-2 pb-4">
-            <Switch id="same-weekday" checked={sameWeekday} onCheckedChange={(checked) => setSameWeekday(checked)} />
-            <Label htmlFor="same-weekday">Same weekday</Label>
+        <div className="h-[50vw] max-h-[50vh] w-full">
+          <div className='flex flex-row gap-4'>
+            <div className="flex items-center space-x-2 pb-4">
+              <Switch id="same-weekday" checked={sameWeekday} onCheckedChange={(checked) => setSameWeekday(checked)} />
+              <Label htmlFor="same-weekday">Show same weekday</Label>
+            </div>
+
+            <div className="flex items-center space-x-2 pb-4">
+              <Switch id="hide-ineffective" checked={hideIneffective} onCheckedChange={(checked) => setHideIneffective(checked)} />
+              <Label htmlFor="hide-ineffective">Business hours only</Label>
+            </div>
           </div>
 
           <ResponsiveContainer>
@@ -76,14 +96,21 @@ const DailyChart = () => {
               <XAxis
                 dataKey="timestamp"
                 type="number"
-                domain={['dataMin', 'dataMax']}
-                ticks={new Array(24).fill(0).map((_, index) => startOfDay.getTime() + index * 60 * 60 * 1000)}
+                domain={[
+                  hideIneffective ? effectiveStartOfDay.getTime() : startOfDay.getTime(),
+                  hideIneffective ? effectiveEndOfDay.getTime() : endOfDay.getTime(),
+                ]}
+                interval='equidistantPreserveStart'
+                ticks={hideIneffective
+                  ? new Array(effectiveEndOfDay.getHours() - effectiveStartOfDay.getHours()).fill(0).map((_, index) => effectiveStartOfDay.getTime() + index * 60 * 60 * 1000)
+                  : new Array(24).fill(0).map((_, index) => startOfDay.getTime() + index * 60 * 60 * 1000)}
                 tickFormatter={(timestamp) => {
                   const date = new Date(timestamp);
                   return date.toLocaleTimeString([], { hour: 'numeric' });
                 }}
+                fontSize={12}
               />
-              <YAxis tickCount={25} domain={[0, (dataMax: number) => Math.max(500, dataMax)]} allowDataOverflow />
+              <YAxis tickCount={25} domain={[0, (dataMax: number) => Math.max(500, dataMax)]} allowDataOverflow width={25} fontSize={12} />
 
               {processedData.map((data, index) => (
                 <Line

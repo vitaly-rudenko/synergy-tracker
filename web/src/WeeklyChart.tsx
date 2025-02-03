@@ -51,24 +51,28 @@ const WeeklyChart = () => {
   }, [])
 
   return (
-    <Card className="w-full">
-      <CardHeader>
+    <Card className="w-full max-w-[1000px]">
+    <CardHeader>
         <CardTitle>Weakly Patterns Comparison</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[50vh] w-full">
+        <div className="h-[50vw] max-h-[50vh] w-full">
           <ResponsiveContainer>
             <LineChart width={800} height={400}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 dataKey="timestamp"
                 type="number"
-                domain={['dataMin', 'dataMax']}
-                ticks={new Array(7).fill(0).map((_, index) => startOfWeek.getTime() + index * 24 * 60 * 60 * 1000)}
+                domain={[
+                  startOfWeek.getTime(),
+                  endOfWeek.getTime(),
+                ]}
                 interval='equidistantPreserveStart'
+                ticks={new Array(7).fill(0).map((_, index) => startOfWeek.getTime() + index * 24 * 60 * 60 * 1000)}
                 tickFormatter={(timestamp) => new Date(timestamp).toLocaleDateString([], { weekday: 'short' })}
+                fontSize={12}
               />
-              <YAxis domain={[50, 600]} allowDataOverflow />
+              <YAxis tickCount={25} domain={[0, (dataMax: number) => Math.max(500, dataMax)]} allowDataOverflow width={25} fontSize={12} />
 
               {processedData.map((data, index) => (
                 <Line
