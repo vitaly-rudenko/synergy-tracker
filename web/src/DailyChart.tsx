@@ -74,24 +74,12 @@ const DailyChart = () => {
   return (
     <Card className="w-full max-w-[1000px]">
       <CardHeader>
-        <CardTitle>Daily Patterns Comparison</CardTitle>
+        <CardTitle>Daily visitors</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[50vw] max-h-[50vh] w-full">
-          <div className='flex flex-row gap-4'>
-            <div className="flex items-center space-x-2 pb-4">
-              <Switch id="same-weekday" checked={sameWeekday} onCheckedChange={(checked) => setSameWeekday(checked)} />
-              <Label htmlFor="same-weekday">Show same weekday</Label>
-            </div>
-
-            <div className="flex items-center space-x-2 pb-4">
-              <Switch id="hide-ineffective" checked={hideIneffective} onCheckedChange={(checked) => setHideIneffective(checked)} />
-              <Label htmlFor="hide-ineffective">Business hours only</Label>
-            </div>
-          </div>
-
+        <div className="h-[75vw] max-h-[50vh] w-full pb-4">
           <ResponsiveContainer>
-            <LineChart className='pb-4'>
+            <LineChart margin={{ top: 0, left: 0, bottom: 0, right: 0 }} className='pb-2'>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 dataKey="timestamp"
@@ -129,6 +117,18 @@ const DailyChart = () => {
               ))}
             </LineChart>
           </ResponsiveContainer>
+
+          <div className='flex flex-row justify-center gap-4'>
+            <div className="flex items-center space-x-2">
+              <Switch id="same-weekday" checked={sameWeekday} onCheckedChange={(checked) => setSameWeekday(checked)} />
+              <Label htmlFor="same-weekday">Same weekday</Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch id="hide-ineffective" checked={hideIneffective} onCheckedChange={(checked) => setHideIneffective(checked)} />
+              <Label htmlFor="hide-ineffective">Business hours</Label>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

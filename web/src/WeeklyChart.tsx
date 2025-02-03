@@ -53,12 +53,12 @@ const WeeklyChart = () => {
   return (
     <Card className="w-full max-w-[1000px]">
     <CardHeader>
-        <CardTitle>Weakly Patterns Comparison</CardTitle>
+        <CardTitle>Weekly visitors</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[50vw] max-h-[50vh] w-full">
+        <div className="h-[75vw] max-h-[50vh] w-full">
           <ResponsiveContainer>
-            <LineChart width={800} height={400}>
+            <LineChart margin={{ top: 0, left: 0, bottom: 0, right: 0 }} className='pb-2'>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 dataKey="timestamp"
