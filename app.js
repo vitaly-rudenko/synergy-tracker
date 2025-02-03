@@ -13,6 +13,7 @@ let iteration = 0;
 async function start() {
   await fs.mkdir('./storage', { recursive: true });
 
+  await writeCounts();
   setInterval(() => writeCounts(), INTERVAL_MS)
 
   const app = express();
