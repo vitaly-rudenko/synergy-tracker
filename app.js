@@ -1,6 +1,8 @@
 import { createReadStream } from 'fs';
 import fs from 'fs/promises';
 import express from 'express'
+import cors from 'cors'
+import helmet from 'helmet'
 
 const endpoint = 'https://fitness-kit.synergy.fitness/clubs/get_clients_in_club_count/?club_id=1'
 
@@ -17,6 +19,14 @@ async function start() {
   setInterval(() => writeCounts(), INTERVAL_MS)
 
   const app = express();
+  app.use(helmet({
+    crossOriginResourcePolicy: {
+      policy: 'cross-origin',
+    }
+  }))
+  app.use(cors({
+    origin: (origin, callback) => callback(null, origin)
+  }))
 
   app.get('/counts.txt', (_, res) => {
     const stream = createReadStream('./storage/counts.txt', 'utf-8');
