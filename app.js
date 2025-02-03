@@ -1,3 +1,4 @@
+import { createReadStream } from 'fs';
 import fs from 'fs/promises';
 import express from 'express'
 
@@ -25,7 +26,7 @@ async function start() {
   const app = express();
 
   app.get('/counts.txt', (_, res) => {
-    const stream = fs.createReadStream('./storage/counts.txt', 'utf-8');
+    const stream = createReadStream('./storage/counts.txt', 'utf-8');
     stream.pipe(res);
   });
 
