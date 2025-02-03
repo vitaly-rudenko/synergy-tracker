@@ -52,11 +52,11 @@ const WeeklyChart = () => {
 
   return (
     <Card className="w-full max-w-[1000px]">
-      <CardHeader className='pb-4'>
+      <CardHeader className='p-4'>
         <CardTitle>Weekly visitors</CardTitle>
       </CardHeader>
-      <CardContent className='pb-1'>
-        <div className="h-[75vw] max-h-[40vh] w-full">
+      <CardContent className='p-1'>
+        <div className="h-[75vw] max-h-[40svh] w-full">
           <ResponsiveContainer>
             <LineChart margin={{ top: 0, left: 0, bottom: 0, right: 0 }} className='pb-2'>
               <CartesianGrid strokeDasharray="3 3" />
@@ -72,7 +72,7 @@ const WeeklyChart = () => {
                 tickFormatter={(timestamp) => new Date(timestamp).toLocaleDateString([], { weekday: 'short' })}
                 fontSize={12}
               />
-              <YAxis tickCount={25} domain={[0, (dataMax: number) => Math.max(500, dataMax)]} allowDataOverflow width={25} fontSize={12} />
+              <YAxis tickCount={25} domain={[0, (dataMax: number) => Math.max(500, dataMax)]} allowDataOverflow width={40} fontSize={12} />
 
               {processedData.map((data, index) => (
                 <Line

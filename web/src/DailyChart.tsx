@@ -73,12 +73,12 @@ const DailyChart = () => {
 
   return (
     <Card className="w-full max-w-[1000px]">
-      <CardHeader className='pb-4'>
+      <CardHeader className='p-4 pb-2'>
         <CardTitle>Daily visitors</CardTitle>
         <CardDescription>Latest count: {data.sort((a, b) => b.timestamp - a.timestamp)[0]?.value ?? 0}</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="h-[75vw] max-h-[40vh] w-full pb-4">
+      <CardContent className='p-1'>
+        <div className="h-[75vw] max-h-[40svh] w-full">
           <ResponsiveContainer>
             <LineChart margin={{ top: 0, left: 0, bottom: 0, right: 0 }} className='pb-2'>
               <CartesianGrid strokeDasharray="3 3" />
@@ -99,7 +99,7 @@ const DailyChart = () => {
                 }}
                 fontSize={12}
               />
-              <YAxis tickCount={25} domain={[0, (dataMax: number) => Math.max(500, dataMax)]} allowDataOverflow width={25} fontSize={12} />
+              <YAxis tickCount={25} domain={[0, (dataMax: number) => Math.max(500, dataMax)]} allowDataOverflow width={40} fontSize={12} />
 
               {processedData.map((data, index) => (
                 <Line
@@ -119,16 +119,17 @@ const DailyChart = () => {
             </LineChart>
           </ResponsiveContainer>
 
-          <div className='flex flex-row justify-center gap-4'>
-            <div className="flex items-center space-x-2">
-              <Switch id="same-weekday" checked={sameWeekday} onCheckedChange={(checked) => setSameWeekday(checked)} />
-              <Label htmlFor="same-weekday">Same weekday</Label>
-            </div>
+        </div>
 
-            <div className="flex items-center space-x-2">
-              <Switch id="hide-ineffective" checked={hideIneffective} onCheckedChange={(checked) => setHideIneffective(checked)} />
-              <Label htmlFor="hide-ineffective">Business hours</Label>
-            </div>
+        <div className='flex flex-row justify-center gap-4 pb-3'>
+          <div className="flex items-center space-x-2">
+            <Switch id="same-weekday" checked={sameWeekday} onCheckedChange={(checked) => setSameWeekday(checked)} />
+            <Label htmlFor="same-weekday">Same weekday</Label>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Switch id="hide-ineffective" checked={hideIneffective} onCheckedChange={(checked) => setHideIneffective(checked)} />
+            <Label htmlFor="hide-ineffective">Business hours</Label>
           </div>
         </div>
       </CardContent>
