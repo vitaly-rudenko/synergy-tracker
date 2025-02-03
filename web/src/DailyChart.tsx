@@ -1,40 +1,32 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from './components/ui/switch';
 import { Label } from './components/ui/label';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { fetchData } from './fetch-data';
 
-const generateData = (days = 30) => {
-  const data = [];
-  const now = Date.now();
-  const dayMs = 24 * 60 * 60 * 1000;
-  const pointsPerDay = 24;
-
-  for (let day = 0; day < days; day++) {
-    const baseValue = 200 + Math.random() * 100;
-    for (let point = 0; point < pointsPerDay; point++) {
-      const timestamp = now - (days - day) * dayMs + (point * dayMs / pointsPerDay);
-      const hour = (point / pointsPerDay) * 24;
-      const timeEffect = Math.cos((hour - 4) * (Math.PI / 8)) * 75;
-      const value = Math.round(baseValue + timeEffect + Math.random() * 30) * 1.5;
-      data.push({
-        timestamp,
-        value
-      });
-    }
-  }
-  return data;
-};
-
-const rawData = generateData();
-
-const startOfDay = new Date();
-startOfDay.setHours(0, 0, 0, 0);
+const endOfDay = new Date();
+endOfDay.setHours(23, 59, 59, 999);
 
 const DailyChart = () => {
   const [sameWeekday, setSameWeekday] = useState(false);
 
-  const processedData = rawData.reduce<{ day: string; data: { timestamp: number; value: number }[] }[]>((acc, curr) => {
+  const [data, setData] = useState<{ timestamp: number; value: number }[]>([]);
+  useEffect(() => {
+    fetchData().then((data) => setData([
+      ...data,
+      {
+        timestamp: Date.now(),
+        value: 0,
+      },
+      {
+        timestamp: endOfDay.getTime(),
+        value: 0,
+      }
+    ]));
+  }, [])
+
+  const processedData = data.reduce<{ day: string; data: { timestamp: number; value: number }[] }[]>((acc, curr) => {
     const date = new Date(curr.timestamp);
 
     if (sameWeekday && date.getDay() !== new Date().getDay()) {
@@ -98,8 +90,8 @@ const DailyChart = () => {
                   dataKey="value"
                   name={data.day}
                   stroke={index === processedData.length - 1 ? '#2563eb' : '#ee9922'}
-                  strokeOpacity={(index / processedData.length) * 0.9 + 0.1}
-                  strokeWidth={index === processedData.length - 1 ? 3 : (index / processedData.length) * 2 + 0.5}
+                  strokeOpacity={((index + 1) / processedData.length) * 0.9 + 0.1}
+                  strokeWidth={index === processedData.length - 1 ? 3 : ((index + 1) / processedData.length) * 2 + 0.5}
                   animationDuration={250}
                   dot={false}
                 />
