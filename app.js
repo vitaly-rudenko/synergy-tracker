@@ -19,24 +19,14 @@ async function start() {
       await truncateCounts();
     }
 
-    await fs.appendFile('./storage/counts.txt', `${Date.now()} ${await fetchCount()}\n`);
+    await fs.appendFile('./storage/counts.txt', `${new Date().toISOString()} ${await fetchCount()}\n`);
   }, INTERVAL_MS)
 
   const app = express();
   app.use(express.json())
 
   app.get('/counts', async (_, res) => {
-    const counts = await fs.readFile('./storage/counts.txt', 'utf-8');
-
-    res.send({
-      counts: counts
-        .split('\n')
-        .filter(Boolean)
-        .map((line) => {
-          const [timestamp, count] = line.split(' ');
-          return { timestamp: Number(timestamp), count: Number(count) };
-        })
-    });
+    res.send(await fs.readFile('./storage/counts.txt', 'utf-8'));
   });
 
   const port = Number(process.env.PORT || 3000)
