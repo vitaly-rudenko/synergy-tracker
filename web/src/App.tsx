@@ -3,11 +3,11 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Calendar, TrendingUp } from 'lucide-react';
-
-type Count = {
-  timestamp: number;
-  count: number;
-}
+import { normalizeDayCounts } from './normalize-day-counts';
+import { Count } from './types';
+import { splitCountsIntoDays } from './split-counts-into-days';
+import { splitCountsIntoWeeks } from './split-counts-into-weeks';
+import { normalizeWeekCounts } from './normalize-week-counts';
 
 const generateDayData = (baseDate: Date): Count[] => {
   const data = [];
@@ -48,126 +48,12 @@ const generateMonthData = (): Count[] => {
   return data;
 };
 
-// Adds zeroes before and after the day to make sure the graph is continuous
-const normalizeDay = (count: Count[]): Count[] => {
-  const result = [...count];
-
-  const startOfDay = new Date(count[0].timestamp);
-  startOfDay.setHours(7, 0, 0, 0);
-  result.unshift({
-    timestamp: startOfDay.getTime() - 2,
-    count: 0,
-  })
-
-  result.unshift({
-    timestamp: count[0].timestamp - 1,
-    count: 0,
-  })
-
-  result.push({
-    timestamp: count[count.length - 1].timestamp + 1,
-    count: 0,
-  })
-
-  const endOfDay = new Date(count[count.length - 1].timestamp);
-  endOfDay.setHours(22, 0, 0, 0);
-  result.push({
-    timestamp: endOfDay.getTime() + 2,
-    count: 0,
-  })
-
-  return result
-}
-
-// Adds zeroes until the end of the week to make sure the graph is continuous
-const normalizeWeek = (count: Count[]): Count[] => {
-  const result = [...count];
-
-  const startOfWeek = new Date(count[0].timestamp);
-  startOfWeek.setHours(7, 0, 0, 0);
-  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1);
-  result.unshift({
-    timestamp: startOfWeek.getTime() - 2,
-    count: 0,
-  })
-
-  result.unshift({
-    timestamp: count[0].timestamp - 1,
-    count: 0,
-  })
-
-  result.push({
-    timestamp: count[count.length - 1].timestamp + 1,
-    count: 0,
-  })
-
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setHours(22, 0, 0, 0);
-  endOfWeek.setDate(startOfWeek.getDate() + 6);
-  result.push({
-    timestamp: endOfWeek.getTime() + 2,
-    count: 0,
-  })
-
-  return result
-}
-
-const splitCountsIntoDaysAscending = (counts: Count[]): Count[][] => {
-  const days = [];
-  let currentDay = [];
-  let lastDay = new Date(counts[0].timestamp).getDate();
-
-  for (const count of counts) {
-    const day = new Date(count.timestamp).getDate();
-
-    if (day !== lastDay) {
-      days.push(currentDay);
-      currentDay = [];
-      lastDay = day;
-    }
-
-    currentDay.push(count);
-  }
-
-  days.push(currentDay);
-  return days;
-}
-
-function getWeek(date: Date) {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() + 4 - (d.getDay() || 7));
-  const yearStart = new Date(d.getFullYear(), 0, 1);
-  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-}
-
-const splitCountsIntoWeeksAscending = (counts: Count[]): Count[][] => {
-  const weeks = [];
-  let currentWeek = [];
-  let lastWeek = getWeek(new Date(counts[0].timestamp));
-
-  for (const count of counts) {
-    const week = getWeek(new Date(count.timestamp));
-
-    if (week !== lastWeek) {
-      weeks.push(currentWeek);
-      currentWeek = [];
-      lastWeek = week;
-    }
-
-    currentWeek.push(count);
-  }
-
-  weeks.push(currentWeek);
-  return weeks;
-}
-
 const GymOccupancy = () => {
   const [viewMode, setViewMode] = useState('day');
 
   const counts = generateMonthData();
-  const days = splitCountsIntoDaysAscending(counts).map(day => normalizeDay(day));
-  const weeks = splitCountsIntoWeeksAscending(counts).map(day => normalizeWeek(day));
+  const days = splitCountsIntoDays(counts).map(day => normalizeDayCounts(day));
+  const weeks = splitCountsIntoWeeks(counts).map(day => normalizeWeekCounts(day));
 
   const formatXAxis = (timestamp: number) => {
     const date = new Date(timestamp);
