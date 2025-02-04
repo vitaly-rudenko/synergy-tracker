@@ -9,6 +9,7 @@ const endpoint = 'https://fitness-kit.synergy.fitness/clubs/get_clients_in_club_
 const INTERVAL_MS = 10 * 60_000; // every 10 minutes
 const TRUNCATE_SIZE = 100_000; // keep last 100k counts
 const TRUNCATE_EVERY_ITERATION = 1_000; // truncate counts every 1000 iterations
+const FETCH_TIMEOUT_MS = 60_000; // 60 seconds
 
 let iteration = 0;
 
@@ -68,7 +69,7 @@ async function fetchCount() {
     headers: {
       'Content-Type': 'application/json',
     },
-    signal: AbortSignal.timeout(60_000),
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   });
 
   const data = await response.json();
