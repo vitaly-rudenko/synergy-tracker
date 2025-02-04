@@ -22,14 +22,12 @@ async function start() {
 
   app.use(cors({
     origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    methods: '*',
+    allowedHeaders: '*'
   }));
 
   app.use(helmet({
-    crossOriginResourcePolicy: {
-      policy: 'cross-origin',
-    }
+    crossOriginResourcePolicy: false
   }));
 
   app.get('/counts.txt', (_, res) => {
