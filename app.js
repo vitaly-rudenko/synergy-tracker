@@ -10,17 +10,6 @@ const INTERVAL_MS = 10 * 60_000; // every 10 minutes
 const TRUNCATE_SIZE = 100_000; // keep last 100k counts
 const TRUNCATE_EVERY_ITERATION = 1_000; // truncate counts every 1000 iterations
 
-const CORS_ORIGINS = [
-  'http://localhost',
-  'http://localhost:3000',
-  'http://localhost:5173',
-  'http://vitaly-rudenko.com',
-  'http://vitaly-rudenko.com:3000',
-  'https://vitaly-rudenko.com',
-  'https://vitaly-rudenko.com:3000',
-  'https://vitaly-rudenko.github.io',
-]
-
 let iteration = 0;
 
 async function start() {
@@ -30,21 +19,18 @@ async function start() {
   setInterval(() => writeCounts(), INTERVAL_MS)
 
   const app = express();
+
+  app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }));
+
   app.use(helmet({
     crossOriginResourcePolicy: {
       policy: 'cross-origin',
     }
-  }))
-  app.use(cors({
-    methods: ['GET'],
-    origin: (origin, callback) => {
-      if (!origin || CORS_ORIGINS.includes(origin)) {
-        callback(null, origin)
-      } else {
-        callback(new Error('INVALID_CORS_ORIGIN'))
-      }
-    }
-  }))
+  }));
 
   app.get('/counts.txt', (_, res) => {
     const stream = createReadStream('./storage/counts.txt', 'utf-8');
