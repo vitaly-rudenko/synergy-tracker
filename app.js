@@ -50,7 +50,11 @@ async function writeCounts() {
     await truncateCounts();
   }
 
-  await fs.appendFile('./storage/counts.txt', `${new Date().toISOString()} ${await fetchCount()}\n`);
+  try {
+    await fs.appendFile('./storage/counts.txt', `${new Date().toISOString()} ${await fetchCount()}\n`);
+  } catch (error) {
+    console.error('Error fetching count:', error);
+  }
 }
 
 async function fetchCount() {
