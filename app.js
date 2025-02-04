@@ -15,8 +15,8 @@ let iteration = 0;
 async function start() {
   await fs.mkdir('./storage', { recursive: true });
 
-  await writeCounts();
-  setInterval(() => writeCounts(), INTERVAL_MS)
+  writeCounts()
+    .then(() => setInterval(() => writeCounts(), INTERVAL_MS));
 
   const app = express();
 
@@ -44,16 +44,21 @@ async function start() {
 }
 
 async function writeCounts() {
-  iteration++;
-  if (iteration > TRUNCATE_EVERY_ITERATION) {
-    iteration = 0;
-    await truncateCounts();
-  }
-
   try {
-    await fs.appendFile('./storage/counts.txt', `${new Date().toISOString()} ${await fetchCount()}\n`);
+    iteration++;
+    if (iteration > TRUNCATE_EVERY_ITERATION) {
+      iteration = 0;
+      await truncateCounts();
+    }
+
+    const count = await Promise.race([
+      fetchCount(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout!')), 30_000)),
+    ])
+
+    await fs.appendFile('./storage/counts.txt', `${new Date().toISOString()} ${count}\n`);
   } catch (error) {
-    console.error('Error fetching count:', error);
+    console.error('Error writing counts:', error);
   }
 }
 
