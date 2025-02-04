@@ -5,6 +5,6 @@ export async function fetchData() {
 
   return counts.split('\n').filter(Boolean).map((line) => {
     const [timestamp, value] = line.split(' ');
-    return { timestamp: Date.parse(timestamp), value: Number(value) };
+    return { timestamp: Date.parse(timestamp), value: value === undefined ? null : Number(value) };
   });
 }

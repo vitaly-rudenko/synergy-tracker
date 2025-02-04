@@ -49,12 +49,14 @@ async function writeCounts() {
       await truncateCounts();
     }
 
-    const count = await Promise.race([
-      fetchCount(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout!')), 30_000)),
-    ])
+    let count = null
+    try {
+      count = await fetchCount();
+    } catch (error) {
+      console.error('Error fetching count:', error);
+    }
 
-    await fs.appendFile('./storage/counts.txt', `${new Date().toISOString()} ${count}\n`);
+    await fs.appendFile('./storage/counts.txt', `${new Date().toISOString()}${count === null ? '' : ` ${count}`}\n`);
   } catch (error) {
     console.error('Error writing counts:', error);
   }
@@ -66,6 +68,7 @@ async function fetchCount() {
     headers: {
       'Content-Type': 'application/json',
     },
+    signal: AbortSignal.timeout(60_000),
   });
 
   const data = await response.json();
