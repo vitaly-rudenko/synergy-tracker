@@ -31,7 +31,9 @@ async function start() {
     crossOriginResourcePolicy: false
   }));
 
-  app.get('/counts.txt', (_, res) => {
+  app.get('/counts.txt', (req, res) => {
+    console.log('Serving counts.txt to client', req.ip, req.headers['user-agent']);
+
     const stream = createReadStream('./storage/counts.txt', 'utf-8');
     stream.pipe(res);
   });
