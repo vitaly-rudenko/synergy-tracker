@@ -59,7 +59,10 @@ async function writeCounts() {
       console.error('Error fetching count:', error);
     }
 
-    await fs.appendFile('./storage/counts.txt', `${new Date().toISOString()}${count === null ? '' : ` ${count}`}\n`);
+    const line = `${new Date().toISOString()}${count === null ? '' : ` ${count}`}\n`
+    console.log('Writing counts:', line);
+
+    await fs.appendFile('./storage/counts.txt', line);
   } catch (error) {
     console.error('Error writing counts:', error);
   }
