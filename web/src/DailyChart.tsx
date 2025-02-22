@@ -1,9 +1,21 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Switch } from './components/ui/switch';
 import { Label } from './components/ui/label';
 import { useEffect, useState } from 'react';
 import { fetchData } from './fetch-data';
+import { getWeekdayNumber } from './utils/get-weekday-number';
+
+const startOfWeek = new Date();
+startOfWeek.setHours(0, 0, 0, 0);
+startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1);
 
 const startOfDay = new Date();
 startOfDay.setHours(0, 0, 0, 0);
@@ -17,8 +29,28 @@ effectiveStartOfDay.setHours(7);
 const effectiveEndOfDay = new Date(startOfDay);
 effectiveEndOfDay.setHours(22);
 
+const weekdayColor: Record<string, string> = {
+  '0': '#A52A2A',
+  '1': '#FF4000',
+  '2': '#FF8000',
+  '3': '#FFD700',
+  '4': '#B8B800',
+  '5': '#5555FF',
+  '6': '#9B4EE3',
+}
+
+const weekdayName: Record<string, string> = {
+  '0': 'Mon',
+  '1': 'Tue',
+  '2': 'Wed',
+  '3': 'Thu',
+  '4': 'Fri',
+  '5': 'Sat',
+  '6': 'Sun',
+}
+
 const DailyChart = () => {
-  const [sameWeekday, setSameWeekday] = useState(false);
+  const [weekday, setWeekday] = useState(-1);
   const [hideIneffective, setHideIneffective] = useState(true);
   const [data, setData] = useState<{ timestamp: number; value: number | null }[]>([]);
 
@@ -36,17 +68,17 @@ const DailyChart = () => {
       timestamp: hideIneffective ? effectiveEndOfDay.getTime() : endOfDay.getTime(),
       value: null,
     }
-  ].sort((a, b) => a.timestamp - b.timestamp).reduce<{ day: string; data: { timestamp: number; value: number | null }[] }[]>((acc, curr) => {
+  ].sort((a, b) => a.timestamp - b.timestamp).reduce<{ day: string; weekday: number; data: { timestamp: number; isToday: boolean; isThisWeek: boolean; value: number | null }[] }[]>((acc, curr) => {
     const date = new Date(curr.timestamp);
 
-    if (sameWeekday && date.getDay() !== new Date().getDay()) {
+    if (weekday !== -1 && getWeekdayNumber(date) !== weekday) {
       return acc;
     }
 
     const day = date.toLocaleDateString();
 
     if (!acc.some((d) => d.day === day)) {
-      acc.push({ day, data: [] });
+      acc.push({ day, weekday: getWeekdayNumber(date), data: [] });
     }
 
     const normalizedDate = new Date(curr.timestamp);
@@ -59,6 +91,8 @@ const DailyChart = () => {
     }
 
     acc.find((d) => d.day === day)!.data.push({
+      isToday: date.getTime() >= startOfDay.getTime(),
+      isThisWeek: date.getTime() >= startOfWeek.getTime(),
       timestamp: normalizedDate.getTime(),
       value: curr.value,
     });
@@ -67,6 +101,7 @@ const DailyChart = () => {
   }, []).map((day) => {
     return {
       day: day.day,
+      weekday: day.weekday,
       data: day.data.sort((a, b) => a.timestamp - b.timestamp)
     }
   });
@@ -74,8 +109,10 @@ const DailyChart = () => {
   return (
     <Card className="w-full max-w-[1000px]">
       <CardHeader className='p-4 pb-2'>
-        <CardTitle>Daily visitors</CardTitle>
-        <CardDescription>Latest count: {data.sort((a, b) => b.timestamp - a.timestamp)[0]?.value ?? 0}</CardDescription>
+        <CardTitle className='flex flex-row gap-2'>
+          <span>Daily visitors</span>
+          <span className='text-black/50 font-normal'>Latest: {data.sort((a, b) => b.timestamp - a.timestamp)[0]?.value ?? 0}</span>
+        </CardTitle>
       </CardHeader>
       <CardContent className='p-1'>
         <div className="h-[75vw] max-h-[40svh] w-full">
@@ -109,7 +146,11 @@ const DailyChart = () => {
                   dataKey="value"
                   connectNulls={false}
                   name={data.day}
-                  stroke={index === processedData.length - 1 ? '#2563eb' : '#ee9922'}
+                  stroke={
+                    data.data.some(i => weekday === -1 ? i.isToday : i.isThisWeek)
+                      ? '#000000'
+                      : weekday === -1 ? weekdayColor[data.weekday] : '#999999'
+                  }
                   strokeOpacity={((index + 1) / processedData.length) * 0.9 + 0.1}
                   strokeWidth={index === processedData.length - 1 ? 3 : ((index + 1) / processedData.length) * 2 + 0.5}
                   animationDuration={250}
@@ -122,15 +163,35 @@ const DailyChart = () => {
         </div>
 
         <div className='flex flex-row justify-center gap-4 pb-3'>
-          <div className="flex items-center space-x-2">
-            <Switch id="same-weekday" checked={sameWeekday} onCheckedChange={(checked) => setSameWeekday(checked)} />
-            <Label htmlFor="same-weekday">Same weekday</Label>
-          </div>
+          <Select value={String(weekday)} onValueChange={(value) => setWeekday(Number(value))}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Select weekday" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='-1'>All weekdays</SelectItem>
+              <SelectItem value='0'>Monday</SelectItem>
+              <SelectItem value='1'>Tuesday</SelectItem>
+              <SelectItem value='2'>Wednesday</SelectItem>
+              <SelectItem value='3'>Thursday</SelectItem>
+              <SelectItem value='4'>Friday</SelectItem>
+              <SelectItem value='5'>Saturday</SelectItem>
+              <SelectItem value='6'>Sunday</SelectItem>
+            </SelectContent>
+          </Select>
 
           <div className="flex items-center space-x-2">
             <Switch id="hide-ineffective" checked={hideIneffective} onCheckedChange={(checked) => setHideIneffective(checked)} />
             <Label htmlFor="hide-ineffective">Business hours</Label>
           </div>
+        </div>
+
+        <div className='flex flex-row justify-center gap-2 pb-3'>
+          {Object.entries(weekdayColor).map(([day, color]) => (
+            <div key={day} className='flex items-center space-x-1'>
+              <div className='w-2 h-4 rounded-full' style={{ backgroundColor: color }} />
+              <span className='text-xs'>{weekdayName[day]}</span>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>

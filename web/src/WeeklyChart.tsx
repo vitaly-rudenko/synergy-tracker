@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getWeek } from './utils/get-week';
 import { useState, useEffect } from 'react';
 import { fetchData } from './fetch-data';
+import { getWeekdayNumber } from './utils/get-weekday-number';
 
 const startOfWeek = new Date();
 startOfWeek.setHours(0, 0, 0, 0);
@@ -39,7 +40,7 @@ const WeeklyChart = () => {
 
     const normalizedDate = new Date(curr.timestamp);
     normalizedDate.setFullYear(startOfWeek.getFullYear(), startOfWeek.getMonth());
-    normalizedDate.setDate(startOfWeek.getDate() + date.getDay() - 1);
+    normalizedDate.setDate(startOfWeek.getDate() + getWeekdayNumber(date));
 
     acc.find((d) => d.week === week)!.data.push({
       timestamp: normalizedDate.getTime(),
@@ -82,7 +83,7 @@ const WeeklyChart = () => {
                   connectNulls={false}
                   dataKey="value"
                   name={data.week}
-                  stroke={index === processedData.length - 1 ? '#2563eb' : '#ee9922'}
+                  stroke={index === processedData.length - 1 ? '#000000' : '#999999'}
                   strokeOpacity={((index + 1) / processedData.length) * 0.9 + 0.1}
                   strokeWidth={index === processedData.length - 1 ? 3 : ((index + 1) / processedData.length) * 2 + 0.5}
                   animationDuration={250}
