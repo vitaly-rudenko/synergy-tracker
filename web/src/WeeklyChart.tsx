@@ -7,7 +7,7 @@ import { getWeekdayNumber } from './utils/get-weekday-number';
 
 const startOfWeek = new Date();
 startOfWeek.setHours(0, 0, 0, 0);
-startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1);
+startOfWeek.setDate(startOfWeek.getDate() - getWeekdayNumber(startOfWeek));
 
 const endOfWeek = new Date();
 endOfWeek.setHours(23, 59, 59, 999);
@@ -49,7 +49,7 @@ const WeeklyChart = () => {
     });
 
     return acc;
-  }, [])
+  }, []);
 
   return (
     <Card className="w-full max-w-[1000px]">

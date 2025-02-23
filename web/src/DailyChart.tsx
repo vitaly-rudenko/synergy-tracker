@@ -15,7 +15,7 @@ import { getWeekdayNumber } from './utils/get-weekday-number';
 
 const startOfWeek = new Date();
 startOfWeek.setHours(0, 0, 0, 0);
-startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1);
+startOfWeek.setDate(startOfWeek.getDate() - getWeekdayNumber(startOfWeek));
 
 const startOfDay = new Date();
 startOfDay.setHours(0, 0, 0, 0);
